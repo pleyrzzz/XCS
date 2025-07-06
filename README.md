@@ -1,4 +1,4 @@
- ## This repo isn't marked as XXX on cloudstream so it can use continue watching!!!
+ ## This repo isn't marked as NSFW on cloudstream so it can use continue watching!!! 🔞
 
 <p align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&text=XXX%20Repo&animation=twinkling&reversal=true" </p>
 
