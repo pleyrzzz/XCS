@@ -107,7 +107,7 @@ class Porn4fans : MainAPI() {
         val jsonString = document.selectFirst("script[type=application/ld+json]")?.data().toString()
         val jsonObject = parseJson<Response>(jsonString)
 
-        return newMovieLoadResponse(jsonObject.name, url, TvType.NSFW, jsonObject.contentUrl) {
+        return newMovieLoadResponse(jsonObject.name, url, TvType.Movie, jsonObject.contentUrl) {
             this.posterUrl = jsonObject.thumbnailUrl
             this.plot      = jsonObject.description
         }
