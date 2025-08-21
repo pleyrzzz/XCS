@@ -16,10 +16,14 @@ class Longvideos : MainAPI() {
 
     override val mainPage = mainPageOf(
         "latest-updates" to "Latest",
+        "most-popular" to "Most Viewed",
         "networks/brazzers-com/latest-updates" to "Brazzers",
         "networks/tushy-com/latest-updates" to "Tushy",
-        "networks/blacked/latest-updates" to "Blacked",
+        "networks/adult-time/latest-updates" to "Adult Time",
         "sites/dorcel-club/latest-updates" to "Dorcel",
+        "categories/hardcore/latest-updates" to "Hardcore",
+        "categories/teen/latest-updates" to "Teen",
+        "categories/group-sex/latest-updates" to "Group Sex",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -45,9 +49,17 @@ class Longvideos : MainAPI() {
             posterUrl = this.select("img").attr("data-src")
         }
 
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        val is4K = this.select("div.wrap div.k4").isNotEmpty();
+        val preview = this.select("div.thumb__img").attr("data-preview");
+
+        val searchResponse =  newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
+
+        if (is4K)
+            searchResponse.quality = SearchQuality.UHD
+
+        return searchResponse
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -77,9 +89,18 @@ class Longvideos : MainAPI() {
         val description = document.select("meta[property=og:description]").attr("content")
 
 
+        val tags = document.select("div.hidden_tags div a.btn_tag").map { it.text() }
+
+        val recommendations =
+            document.select("div.related-video div.list-videos div.item").mapNotNull {
+                it.toSearchResult()
+            }
+
         return newMovieLoadResponse(title, url, TvType.Movie, url) {
             this.posterUrl = poster
             this.plot      = description
+            this.tags = tags
+            this.recommendations = recommendations
         }
     }
 
