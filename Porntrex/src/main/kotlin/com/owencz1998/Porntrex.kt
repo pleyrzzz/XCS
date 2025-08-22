@@ -3,8 +3,10 @@ package com.owencz1998
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.LoadResponse
+import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.SearchQuality
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
@@ -32,15 +34,19 @@ class Porntrex : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
 
     override val mainPage = mainPageOf(
-            "latest-updates" to "Latest Videos",
-            "most-popular/daily/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed_today&from4=" to "Most popular daily",
-            "top-rated/daily/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_today&from4=" to "Top rated daily",
-            "most-popular/weekly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed_week&from4=" to "Most popular weekly",
-            "top-rated/weekly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_week&from4=" to "Top rated weekly",
-            "most-popular/monthly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed_month&from4=" to "Most popular monthly",
-            "top-rated/monthly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_month&from4=" to "Top rated monthly",
-            "most-popular/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed&from4=" to "Most popular all time",
-            "top-rated/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating&from4=" to "Top rated all time",
+            "hd/latest-updates" to "Latest Videos",
+            "hd/most-popular/daily/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed_today&from4=" to "Most popular daily",
+            "hd/top-rated/daily/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_today&from4=" to "Top rated daily",
+            "hd/most-popular/weekly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed_week&from4=" to "Most popular weekly",
+            "hd/top-rated/weekly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_week&from4=" to "Top rated weekly",
+            "hd/most-popular/monthly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed_month&from4=" to "Most popular monthly",
+            "hd/top-rated/monthly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_month&from4=" to "Top rated monthly",
+            "hd/most-popular/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed&from4=" to "Most popular all time",
+            "hd/top-rated/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating&from4=" to "Top rated all time",
+            "categories/4k-porn/?mode=async&function=get_block&block_id=list_videos_common_videos_list_4k&sort_by=post_date&from4=" to "4K videos",
+        "categories/threesome/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Threesome",
+        "categories/teen/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Teens",
+        "categories/hardcore/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Hardcore videos",
     )
 
     override suspend fun getMainPage(
@@ -76,9 +82,28 @@ class Porntrex : MainAPI() {
         val title = this.selectFirst("p.inf a")?.text() ?: return null
         val href = fixUrl(this.selectFirst("p.inf a")!!.attr("href"))
         val posterUrl = fixUrlNull(this.select("a.thumb img.cover").attr("data-src"))
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+
+        val qualityStr = this.selectFirst(".hd-text-icon .quality")?.text() ?: return null
+
+        var quality:SearchQuality? = null
+        if(qualityStr.isNotEmpty()) {
+            when {
+                qualityStr.contains("4k", true) -> SearchQuality.FourK
+                qualityStr.contains("2k", true) -> SearchQuality.UHD
+                qualityStr.contains("1080", true) -> SearchQuality.HD
+                qualityStr.contains("720", true) -> SearchQuality.HQ
+                qualityStr.contains("480", true) -> SearchQuality.SD
+                else -> SearchQuality.WebRip
+            }.also { quality = it }
+        }
+
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
             this.posterHeaders = mapOf(Pair("referer", "${mainUrl}/"))
+
+            if(quality !=null){
+                this.quality = quality
+            }
         }
 
     }
@@ -119,6 +144,8 @@ class Porntrex : MainAPI() {
         val tags = jsonObject.getString("video_tags").split(", ").map { it.replace("-", "") }.filter { it.isNotBlank() && !StringUtil.isNumeric(it) }
         val description = jsonObject.getString("video_title")
 
+        val models = document.select(".block-details .items-holder a:has(i.fa-star)").map { it.text().trim() }
+
         val recommendations =
                 document.select("div#list_videos_related_videos div.video-list div.video-item").mapNotNull {
                     it.toSearchResult()
@@ -130,6 +157,8 @@ class Porntrex : MainAPI() {
             this.plot = description
             this.tags = tags
             this.recommendations = recommendations
+            
+            addActors(models)
         }
     }
 

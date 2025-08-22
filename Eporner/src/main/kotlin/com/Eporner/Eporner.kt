@@ -31,7 +31,9 @@ class Eporner : MainAPI() {
         )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("$mainUrl/${request.data}/$page/", referer = "$mainUrl/").document
+        val reqUrl = if(page > 1) "$mainUrl/${request.data}/$page/" else "$mainUrl/${request.data}/"
+
+        val document = app.get(reqUrl, referer = "$mainUrl/").document
         val home = document.select("#div-search-results div.mb").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
@@ -52,13 +54,24 @@ class Eporner : MainAPI() {
             posterUrl=this.selectFirst("img")?.attr("src")
         }
 
-        val quality = this.selectFirst(".mvhdico span")?.text()
+        val qualityStr = this.selectFirst(".mvhdico span")?.text()
+        var quality:SearchQuality? = null
+        if(!qualityStr.isNullOrEmpty()) {
+            when {
+                qualityStr.contains("4k", true) -> SearchQuality.FourK
+                qualityStr.contains("2k", true) -> SearchQuality.UHD
+                qualityStr.contains("1080", true) -> SearchQuality.HD
+                qualityStr.contains("720", true) -> SearchQuality.HQ
+                qualityStr.contains("480", true) -> SearchQuality.SD
+                else -> SearchQuality.WebRip
+            }.also { quality = it }
+        }
 
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
 
-            if(!quality.isNullOrEmpty()){
-                addQuality(quality)
+            if(quality !=null){
+                this.quality = quality
             }
         }
     }
@@ -95,7 +108,7 @@ class Eporner : MainAPI() {
         val tags = document.select("#video-info-tags li.vit-category a").map { it.text() }
 
         val recommendations =
-            document.select("div.relateddiv div.mb").mapNotNull {
+            document.select("#relateddiv div.mb").mapNotNull {
                 it.toSearchResult()
             }
 
