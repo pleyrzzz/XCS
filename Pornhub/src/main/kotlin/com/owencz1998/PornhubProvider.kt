@@ -32,17 +32,14 @@ class PornHubProvider : MainAPI() {
         "${mainUrl}/video?o=ht&t=w&hd=1&page="       to "Hottest",
         "${mainUrl}/video?p=professional&hd=1&page=" to "Professional",
         "${mainUrl}/video?o=cm&t=w&hd=1&page="       to "Newest",
-        "${mainUrl}/video?c=35&page="                to       "Anal",
-        "${mainUrl}/video?c=27&page="                to "Lesbian",
-        "${mainUrl}/video?c=21&page="                to "Hardcore",
-        "${mainUrl}/video?c=57&page="                 to "Compilation",
-        "${mainUrl}/video?c=89&page="                to "Babysitter", 
-        "${mainUrl}/video?c=65&page="                 to "Threesome",
-        "${mainUrl}/video?c=2&page="               to "Orgy",
-        "${mainUrl}/video?c=4&page="                 to "Big Ass",
-        "${mainUrl}/video?c=7&page="                 to "Big Dick",
-        "${mainUrl}/video?c=8&page="                 to "Big Tits",
-        "${mainUrl}/video?c=13&page="                to "Blowjob",
+        "${mainUrl}/video?c=35&hd=1&page="                to       "Anal",
+        "${mainUrl}/video?c=27&hd=1&page="                to "Lesbian",
+        "${mainUrl}/video?c=21&hd=1&page="                to "Hardcore",
+        "${mainUrl}/video?c=57&hd=1&page="                 to "Compilation",
+        "${mainUrl}/video?c=65&hd=1&page="                 to "Threesome",
+        "${mainUrl}/video?c=2&hd=1&page="               to "Orgy",
+        "${mainUrl}/video?c=8&hd=1&page="                 to "Big Tits",
+        "${mainUrl}/video?c=13&hd=1&page="                to "Blowjob",
                        
     )
     private val cookies = mapOf(Pair("hasVisited", "1"), Pair("accessAgeDisclaimerPH", "1"))
@@ -60,10 +57,11 @@ class PornHubProvider : MainAPI() {
                 val title = it.selectFirst("span.title a")?.text() ?: ""
                 val link = fixUrlNull(it.selectFirst("a")?.attr("href")) ?: return@mapNotNull null
                 val img = fetchImgUrl(it.selectFirst("img"))
+
                 newMovieSearchResponse(
                     name = title,
                     url = link,
-                    type = TvType.NSFW,
+                    type = globalTvType,
 
                 ){
                     posterUrl = img
@@ -97,7 +95,7 @@ class PornHubProvider : MainAPI() {
             newMovieSearchResponse(
                 name = title,
                 url = link,
-                type = TvType.NSFW
+                type = globalTvType
             ){posterUrl = image}
         }.distinctBy { it.url }
     }
@@ -110,34 +108,34 @@ class PornHubProvider : MainAPI() {
         val tags = soup.select("div.categoriesWrapper a")
             .map { it?.text()?.trim().toString().replace(", ", "") }
 
-        val recommendations = soup.select("ul#recommendedVideos li.pcVideoListItem").map {
+        val recommendations = soup.select("ul#recommendedVideosListing li.pcVideoListItem").map {
             val rTitle = it.selectFirst("div.phimage a")?.attr("title") ?: ""
             val rUrl = fixUrl(it.selectFirst("div.phimage a")?.attr("href").toString())
             val rPoster = fixUrl(
                 it.selectFirst("div.phimage img.js-videoThumb")?.attr("src").toString()
             )
-            newMovieSearchResponse(name = rTitle, url = rUrl, type = TvType.NSFW){
+            newMovieSearchResponse(name = rTitle, url = rUrl, type = globalTvType){
                  posterUrl = rPoster
             }
 
         }
 
         val actors =
-            soup.select("div.video-wrapper div.video-info-row.userRow div.userInfo div.usernameWrap a")
+            soup.select("div.video-info-row div.pornstarsWrapper a.pstar-list-btn")
                 .map { it.text() }
 
-        val relatedVideo = soup.select("ul#relatedVideosCenter li.pcVideoListItem").map {
+        val relatedVideo = soup.select("ul#relatedVideosListing li.pcVideoListItem").map {
             val rTitle = it.selectFirst("div.phimage a")?.attr("title") ?: ""
             val rUrl = fixUrl(it.selectFirst("div.phimage a")?.attr("href").toString())
             val rPoster = fixUrl(
                 it.selectFirst("div.phimage img.js-videoThumb")?.attr("src").toString()
             )
-            newMovieSearchResponse(name = rTitle, url = rUrl, type = TvType.NSFW){
+            newMovieSearchResponse(name = rTitle, url = rUrl, type = globalTvType){
                 this.posterUrl = rPoster
             }
         }
 
-        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
+        return newMovieLoadResponse(title, url, globalTvType, url) {
             this.posterUrl = poster
             this.plot = title
             this.tags = tags

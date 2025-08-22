@@ -2,6 +2,8 @@ package com.LongVideos
 
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.utils.*
 
 class Longvideos : MainAPI() {
@@ -49,15 +51,15 @@ class Longvideos : MainAPI() {
             posterUrl = this.select("img").attr("data-src")
         }
 
-        val is4K = this.select("div.wrap div.k4").isNotEmpty();
-        val preview = this.select("div.thumb__img").attr("data-preview");
-
         val searchResponse =  newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
 
-        if (is4K)
-            searchResponse.quality = SearchQuality.UHD
+//        val is4K = this.select("div.wrap div.k4").isNotEmpty();
+//        val preview = this.select("div.thumb__img").attr("data-preview");
+//
+//        if (is4K)
+//            searchResponse.quality = SearchQuality.UHD
 
         return searchResponse
     }
@@ -88,8 +90,11 @@ class Longvideos : MainAPI() {
         val poster      = document.select("meta[property='og:image']").attr("content")
         val description = document.select("meta[property=og:description]").attr("content")
 
+        val videoId = document.selectXpath("//script[contains(text(),'videoId')]").first()?.data()
+            ?.substringAfter("videoId: '")?.substringBefore("'")
 
         val tags = document.select("div.hidden_tags div a.btn_tag").map { it.text() }
+        val models = document.select("div.block-details div.item a.btn_model").map { it.text() }
 
         val recommendations =
             document.select("div.related-video div.list-videos div.item").mapNotNull {
@@ -101,6 +106,11 @@ class Longvideos : MainAPI() {
             this.plot      = description
             this.tags = tags
             this.recommendations = recommendations
+            addActors(models)
+
+            if(!videoId.isNullOrEmpty()){
+                addTrailer("https://cast.longvideos.xxx/preview/$videoId.mp4")
+            }
         }
     }
 

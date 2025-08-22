@@ -21,15 +21,17 @@ class Eporner : MainAPI() {
             "best-videos" to "Best Videos",
             "top-rated" to "Top Rated",
             "most-viewed" to "Most Viewed",
-            "cat/milf" to "Milf",
-            "cat/japanese" to "Japanese",
+            "cat/teens" to "Teen",
+            "cat/hardcore" to "Hardcore",
+            "cat/threesome" to "Threesome",
+            "cat/group-sex" to "Group Sex",
             "cat/hd-1080p" to "1080 Porn",
             "cat/4k-porn" to "4K Porn",
             "recommendations" to "Recommendation Videos",
         )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("$mainUrl/${request.data}/$page/").document
+        val document = app.get("$mainUrl/${request.data}/$page/", referer = "$mainUrl/").document
         val home = document.select("#div-search-results div.mb").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
@@ -49,8 +51,15 @@ class Eporner : MainAPI() {
         {
             posterUrl=this.selectFirst("img")?.attr("src")
         }
+
+        val quality = this.selectFirst(".mvhdico span")?.text()
+
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
+
+            if(!quality.isNullOrEmpty()){
+                addQuality(quality)
+            }
         }
     }
 
@@ -83,10 +92,18 @@ class Eporner : MainAPI() {
         val poster = fixUrlNull(document.selectFirst("[property='og:image']")?.attr("content"))
         val description = document.selectFirst("meta[property=og:description]")?.attr("content")?.trim()
 
+        val tags = document.select("#video-info-tags li.vit-category a").map { it.text() }
+
+        val recommendations =
+            document.select("div.relateddiv div.mb").mapNotNull {
+                it.toSearchResult()
+            }
 
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = poster
             this.plot = description
+            this.recommendations = recommendations
+            this.tags = tags
         }
     }
 
