@@ -101,7 +101,7 @@ class Longvideos : MainAPI() {
                 it.toSearchResult()
             }
 
-        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = poster
             this.plot      = description
             this.tags = tags

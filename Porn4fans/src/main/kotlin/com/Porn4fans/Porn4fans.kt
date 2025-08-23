@@ -78,7 +78,7 @@ class Porn4fans : MainAPI() {
         val href      = this.select("a").attr("href")
         val posterUrl = this.select("img").attr("src")
 
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
     }
@@ -107,7 +107,7 @@ class Porn4fans : MainAPI() {
         val jsonString = document.selectFirst("script[type=application/ld+json]")?.data().toString()
         val jsonObject = parseJson<Response>(jsonString)
 
-        return newMovieLoadResponse(jsonObject.name, url, TvType.Movie, jsonObject.contentUrl) {
+        return newMovieLoadResponse(jsonObject.name, url, TvType.NSFW, jsonObject.contentUrl) {
             this.posterUrl = jsonObject.thumbnailUrl
             this.plot      = jsonObject.description
         }

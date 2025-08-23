@@ -67,7 +67,7 @@ class Eporner : MainAPI() {
             }.also { quality = it }
         }
 
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
 
             if(quality !=null){

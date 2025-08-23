@@ -62,7 +62,7 @@ class AllPornStream : MainAPI() {
         val href = this.id
         val posterUrl = this.imageDetails.flatten()
             .firstOrNull { it.startsWith("http") }
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
 
@@ -74,7 +74,7 @@ class AllPornStream : MainAPI() {
         val posterUrl = this.imageDetails
             .flatten()
             .firstOrNull { it.startsWith("http") }
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
     }

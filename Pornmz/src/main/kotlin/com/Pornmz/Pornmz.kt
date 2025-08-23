@@ -53,7 +53,7 @@ class Pornmz : MainAPI() {
             posterUrl = this.select("video").attr("poster")
         }
 
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
     }

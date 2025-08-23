@@ -58,7 +58,7 @@ class YesPornPlease : MainAPI() {
         if(posterUrl.isEmpty()) {
             posterUrl = this.selectFirst("a > img")?.attr("src") ?:""
         }
-        return newMovieSearchResponse(title, href, TvType.Movie) {
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
             this.posterUrl = posterUrl
         }
     }
@@ -83,7 +83,7 @@ class YesPornPlease : MainAPI() {
         val document = app.get(url).document
         val title = document.selectFirst("meta[property=og:title]")?.attr("content") ?:""
         val posterUrl = document.selectFirst("meta[property=og:image]")?.attr("content") ?:""
-        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = posterUrl
         }
     }
