@@ -43,10 +43,10 @@ class Porntrex : MainAPI() {
             "hd/top-rated/monthly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_month&from4=" to "Top rated monthly",
             "hd/most-popular/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed&from4=" to "Most popular all time",
             "hd/top-rated/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating&from4=" to "Top rated all time",
-            "categories/4k-porn/?mode=async&function=get_block&block_id=list_videos_common_videos_list_4k&sort_by=post_date&from4=" to "4K videos",
-        "categories/threesome/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Threesome",
-        "categories/teen/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Teens",
-        "categories/hardcore/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Hardcore videos",
+//            "categories/4k-porn/?mode=async&function=get_block&block_id=list_videos_common_videos_list_4k&sort_by=post_date&from4=" to "4K videos",
+//        "categories/threesome/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Threesome",
+//        "categories/teen/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Teens",
+//        "categories/hardcore/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=01" to "Hardcore videos",
     )
 
     override suspend fun getMainPage(
@@ -83,10 +83,10 @@ class Porntrex : MainAPI() {
         val href = fixUrl(this.selectFirst("p.inf a")!!.attr("href"))
         val posterUrl = fixUrlNull(this.select("a.thumb img.cover").attr("data-src"))
 
-        val qualityStr = this.selectFirst(".hd-text-icon .quality")?.text() ?: return null
+        val qualityStr = this.selectFirst(".hd-text-icon .quality")?.text()
 
         var quality:SearchQuality? = null
-        if(qualityStr.isNotEmpty()) {
+        if(!qualityStr.isNullOrEmpty()) {
             when {
                 qualityStr.contains("4k", true) -> SearchQuality.FourK
                 qualityStr.contains("2k", true) -> SearchQuality.UHD

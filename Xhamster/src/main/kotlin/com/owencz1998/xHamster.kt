@@ -4,6 +4,7 @@ package com.keyiflerolsun
 
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.amap
 import com.lagradost.cloudstream3.utils.*
 
 @Suppress("ClassName")
@@ -48,7 +49,13 @@ class xHamster : MainAPI() {
         val href      = fixUrl(this.selectFirst("a.video-thumb-info__name")!!.attr("href"))
         val posterUrl = fixUrlNull(this.select("img.thumb-image-container__image").attr("src"))
 
-        return newMovieSearchResponse(title, href, TvType.NSFW) { this.posterUrl = posterUrl }
+        val is4K = !this.select(".thumb-image-container__on-video .beta-thumb-uhd").isEmpty()
+        return newMovieSearchResponse(title, href, TvType.NSFW) {
+            this.posterUrl = posterUrl
+            if(is4K){
+                quality = SearchQuality.FourK
+            }
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
@@ -76,10 +83,13 @@ class xHamster : MainAPI() {
 
         val title           = document.selectFirst("div.with-player-container h1")?.text()?.trim().toString()
         val poster          = fixUrlNull(document.selectFirst("div.xp-preload-image")?.attr("style")?.substringAfter("https:")?.substringBefore("\');"))
-        val tags            = document.select(" nav#video-tags-list-container ul.root-8199e.video-categories-tags.collapsed-8199e li.item-8199e a.video-tag").map { it.text() }
-        val recommendations = document.select("div.related-container div.thumb-list div.thumb-list__item").mapNotNull { it.toSearchResult() }
+        val tags            = document.select("nav#video-tags-list-container a.tag-96c3e .label-96c3e").map { it.text() }
+        val recommendations = document.select("div.mixed-section.videos div.thumb-list--related div.thumb-list__item").mapNotNull { it.toSearchResult() }
+
+        val desc = document.selectFirst(".controls-info .ab-info p")?.text()?.trim().toString()
 
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
+            this.plot = desc
             this.posterUrl       = poster
             this.tags            = tags
             this.recommendations = recommendations
@@ -87,18 +97,29 @@ class xHamster : MainAPI() {
     }
 
     override suspend fun loadLinks(data: String, isCasting: Boolean, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit): Boolean {
-        callback(
-            newExtractorLink(
-                source  = name,
-                name    = name,
-                url     = fixUrl(app.get(url = data).document.selectXpath("//link[contains(@href,'.m3u8')]")[0].attr("href")),
-                ExtractorLinkType.M3U8
-            ) {
-                this.referer = mainUrl
-                this.quality = Qualities.Unknown.value
-            }
-        )
+        val videoUrl = fixUrl(app.get(url = data).document.selectXpath("//link[contains(@href,'.m3u8')]")[0].attr("href"))
 
+        val extlinkList = mutableListOf<ExtractorLink>()
+        M3u8Helper().m3u8Generation(
+                M3u8Helper.M3u8Stream(
+                    videoUrl
+                ), true
+            ).amap { stream ->
+            extlinkList.add(
+                newExtractorLink(
+                    source = name,
+                    name = name,
+                    url = stream.streamUrl,
+                    type = ExtractorLinkType.M3U8,
+                ) {
+                    quality = Regex("(\\d+)").find(stream.streamUrl)?.groupValues?.get(1)
+                        .let { getQualityFromName(it) }
+                    referer = mainUrl
+                }
+            )
+        }
+
+        extlinkList.forEach(callback)
         return true
     }
 }

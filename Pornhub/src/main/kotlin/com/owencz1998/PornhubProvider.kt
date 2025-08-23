@@ -176,7 +176,7 @@ class PornHubProvider : MainAPI() {
                             url = stream.streamUrl,
                             type = ExtractorLinkType.M3U8,
                         ) {
-                            this.quality = Regex("(\\d+)").find(quality ?: "")?.groupValues?.get(1)
+                            this.quality = Regex("(\\d+)p").find(quality ?: "")?.groupValues?.get(1)
                             .let { getQualityFromName(it) }
                             this.referer = mainUrl
                         }
