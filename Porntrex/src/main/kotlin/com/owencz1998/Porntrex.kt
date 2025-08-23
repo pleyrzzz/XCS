@@ -43,10 +43,10 @@ class Porntrex : MainAPI() {
             "hd/top-rated/monthly/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating_month&from=" to "Top rated monthly",
             "hd/most-popular/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=video_viewed&from=" to "Most popular all time",
             "hd/top-rated/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=rating&from=" to "Top rated all time",
-//            "categories/4k-porn/?mode=async&function=get_block&block_id=list_videos_common_videos_list_4k&sort_by=post_date&from15=" to "4K videos",
+            "categories/4k-porn/?mode=async&function=get_block&block_id=list_videos_common_videos_list_4k&sort_by=post_date&from15=" to "4K videos",
 //        "categories/threesome/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=" to "Threesome",
 //        "categories/teen/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=" to "Teens",
-        "categories/hardcore/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=" to "Hardcore videos",
+//        "categories/hardcore/?mode=async&function=get_block&block_id=list_videos_common_videos_list_norm&sort_by=post_date&from=" to "Hardcore videos",
     )
 
     override suspend fun getMainPage(
@@ -60,9 +60,13 @@ class Porntrex : MainAPI() {
             "$mainUrl/${request.data}/${page}/"
         }
         if (request.data.contains("mode=async")) {
-            url = "$mainUrl/${request.data}${page}"
+            url = if(page<10){
+                "$mainUrl/${request.data}0${page}"
+            }else {
+                "$mainUrl/${request.data}${page}"
+            }
         }
-        val document = app.get(url).document
+        val document = app.get(url, referer = mainUrl).document
         val home =
                 document.select("div.video-list div.video-item")
                         .mapNotNull {
