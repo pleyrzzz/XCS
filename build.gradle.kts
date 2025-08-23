@@ -34,12 +34,13 @@ subprojects {
     apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     cloudstream {
-        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/owenconnorz/XXX")
+        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/pleyrzzz/XCS")
         authors = listOf("XXX")
+        tvTypes = listOf("NSFW")
     }
 
     android {
-        namespace = "com.owenconnorz"
+        namespace = "xxx.pleyrzzz"
 
         defaultConfig {
             minSdk = 21

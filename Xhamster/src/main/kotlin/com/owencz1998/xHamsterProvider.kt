@@ -1,6 +1,7 @@
 package owencz1998
 
 import android.content.Context
+import com.keyiflerolsun.xHamster
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
 // This import might be necessary if registerMainAPI is an extension function
@@ -11,6 +12,6 @@ class XhamsterPlugin : Plugin() { // Inherits from Plugin
     override fun load(context: Context) {
         // All providers should be added in this way.
         // Register XhamsterProvider
-        registerMainAPI(XhamsterProvider()) // Calls the provider registration here
+        registerMainAPI(xHamster()) // Calls the provider registration here
     }
 }
