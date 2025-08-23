@@ -112,9 +112,9 @@ class xHamster : MainAPI() {
                     url = stream.streamUrl,
                     type = ExtractorLinkType.M3U8,
                 ) {
-                    quality = Regex("(\\d+)").find(stream.streamUrl)?.groupValues?.get(1)
+                    quality = Regex("(\\d+)p").find(stream.streamUrl)?.groupValues?.last()
                         .let { getQualityFromName(it) }
-                    referer = mainUrl
+                    referer = data
                 }
             )
         }
