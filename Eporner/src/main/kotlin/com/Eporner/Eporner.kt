@@ -2,6 +2,7 @@ package com.Eporner
 
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.LoadResponse.Companion.addDuration
 import com.lagradost.cloudstream3.utils.*
 import org.json.JSONObject
 import java.math.BigInteger
@@ -17,15 +18,14 @@ class Eporner : MainAPI() {
     override val vpnStatus            = VPNStatus.MightBeNeeded
 
     override val mainPage = mainPageOf(
-            "" to "Recent Videos",
+            "cat/hd-1080p" to "Recent Videos",
             "best-videos" to "Best Videos",
-            "top-rated" to "Top Rated",
-            "most-viewed" to "Most Viewed",
-            "cat/teens" to "Teen",
-            "cat/hardcore" to "Hardcore",
-            "cat/threesome" to "Threesome",
-            "cat/group-sex" to "Group Sex",
-            "cat/hd-1080p" to "1080 Porn",
+            "cat/hd-1080p/SORT-top-rated" to "Top Rated",
+            "cat/hd-1080p/SORT-most-viewed" to "Most Viewed",
+            "cat/teens/hd-1080p" to "Teen",
+            "cat/hardcore/hd-1080p" to "Hardcore",
+            "cat/threesome/hd-1080p" to "Threesome",
+            "cat/group-sex/hd-1080p" to "Group Sex",
             "cat/4k-porn" to "4K Porn",
             "recommendations" to "Recommendation Videos",
         )
@@ -112,11 +112,18 @@ class Eporner : MainAPI() {
                 it.toSearchResult()
             }
 
+        val duration  = document.selectFirst(".video-info .vid-length")?.text()?.trim()
+        //val quality  = document.selectFirst(".video-info .vid-quality")?.text()?.trim()
+
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = poster
             this.plot = description
             this.recommendations = recommendations
             this.tags = tags
+
+            if(!duration.isNullOrEmpty()){
+                addDuration(duration)
+            }
         }
     }
 
