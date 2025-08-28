@@ -102,7 +102,7 @@ class Porndig : MainAPI() {
     ): HomePageResponse {
         val url = "$mainUrl/posts/load_more_posts"
 
-        val params = getQueryParams(url)
+        val params = getQueryParams(request.data)
 
         var categoryFilter: Pair<String, String>? = null
         if(!params.get("category_id").isNullOrEmpty()){
@@ -132,7 +132,7 @@ class Porndig : MainAPI() {
 
             return newHomePageResponse(
                 list = HomePageList(
-                    name = request.name + "" + params.get("type")?:"ctr" + " "+ params.get("category_name")?:"",
+                    name = request.name,
                     list = home,
                     isHorizontalImages = true
                 ),
