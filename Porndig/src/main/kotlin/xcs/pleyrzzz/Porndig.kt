@@ -17,6 +17,7 @@ import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.newExtractorLink
@@ -39,12 +40,12 @@ class Porndig : MainAPI() {
             "posts?type=views" to "Most Viewed Videos",
             "posts?type=rating" to "Most Rated Videos",
             "posts?type=date&quality=2160" to "4K Videos",
-            "posts/?type=date&category_id=34&category_name=young" to "Young",
-        "posts/?type=date&category_id=1043&category_name=threesome" to "Threesome",
-        "posts/?type=date&category_id=90&category_name=xxx-scenario" to "Scenario",
-        "posts/?type=date&category_id=42&category_name=orgy" to "Orgy",
-        "posts/?type=date&category_id=1233&category_name=cosplay" to "Cosplay",
-        "posts/?type=date&category_id=57&category_name=fetish" to "Fetish",
+            "posts?type=date&category_id=34&category_name=young" to "Young",
+        "posts?type=date&category_id=1043&category_name=threesome" to "Threesome",
+        "posts?type=date&category_id=90&category_name=xxx-scenario" to "Scenario",
+        "posts?type=date&category_id=42&category_name=orgy" to "Orgy",
+        "posts?type=date&category_id=1233&category_name=cosplay" to "Cosplay",
+        "posts?type=date&category_id=57&category_name=fetish" to "Fetish",
     )
 
     fun getQueryParams(query: String): Map<String, String> {
@@ -99,26 +100,20 @@ class Porndig : MainAPI() {
             page: Int,
             request: MainPageRequest
     ): HomePageResponse {
-        var url = "$mainUrl/${request.data}/${page}/"
-        var load_more_posts = false
-        if(request.data.startsWith("posts")){
-            load_more_posts = true
-            url = "$mainUrl/posts/load_more_posts"
+        val url = "$mainUrl/posts/load_more_posts"
+
+        val params = getQueryParams(url)
+
+        var categoryFilter: Pair<String, String>? = null
+        if(!params.get("category_id").isNullOrEmpty()){
+            categoryFilter = Pair(params.get("category_id")?:"", params.get("category_name")?:"")
         }
 
-        val json = if(load_more_posts) {
-            val params = getQueryParams(url)
+        val requestBody = getRequestBody(filter_type = params.get("type")?:"ctr",
+            category = categoryFilter,
+            quality = params.get("quality")?:"1080",page=page)
+        val json =app.post(url, referer = mainUrl, requestBody =  requestBody).toString()
 
-            var categoryFilter: Pair<String, String>? = null
-            if(!params.get("category_id").isNullOrEmpty()){
-                categoryFilter = Pair(params.get("category_id")?:"", params.get("category_name")?:"")
-            }
-
-            val requestBody = getRequestBody(filter_type = params.get("type")?:"ctr",
-                category = categoryFilter,
-                quality = params.get("quality")?:"1080",page=page)
-            app.post(url, referer = mainUrl, requestBody =  requestBody).toString()
-        }else app.get(url, referer = mainUrl, timeout = 15).toString()
 
         val jsonObject = JSONObject(json)
         val success = jsonObject.getBoolean("success")
@@ -147,7 +142,7 @@ class Porndig : MainAPI() {
 
         return newHomePageResponse(
             list = HomePageList(
-                name = request.name,
+                name = request.name + "" + params.get("type")?:"ctr" + " "+ params.get("category_name")?:"",
                 list = emptyList(),
                 isHorizontalImages = true
             ),
@@ -238,7 +233,8 @@ class Porndig : MainAPI() {
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
 
-        val jsonObject = JSONObject(document.select("script[type=\"application/ld+json\"]").first()?.text()?:"")
+        val jsonString = document.selectFirst("script[type=application/ld+json]")?.data().toString()
+        val jsonObject = JSONObject(jsonString)
 
         val title = jsonObject.getString("name")
         val description = jsonObject.getString("description")
