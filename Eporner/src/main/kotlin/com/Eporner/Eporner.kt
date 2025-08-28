@@ -27,7 +27,6 @@ class Eporner : MainAPI() {
             "cat/threesome/hd-1080p" to "Threesome",
             "cat/group-sex/hd-1080p" to "Group Sex",
             "cat/4k-porn" to "4K Porn",
-            "recommendations" to "Recommendation Videos",
         )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
