@@ -132,7 +132,7 @@ class Porndig : MainAPI() {
 
             return newHomePageResponse(
                 list = HomePageList(
-                    name = request.name,
+                    name = request.name + "" + params.get("type")?:"ctr" + " "+ params.get("category_name")?:"",
                     list = home,
                     isHorizontalImages = true
                 ),
@@ -142,7 +142,7 @@ class Porndig : MainAPI() {
 
         return newHomePageResponse(
             list = HomePageList(
-                name = request.name + "" + params.get("type")?:"ctr" + " "+ params.get("category_name")?:"",
+                name = request.name,
                 list = emptyList(),
                 isHorizontalImages = true
             ),
