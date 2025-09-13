@@ -17,7 +17,6 @@ import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.newExtractorLink
@@ -155,7 +154,9 @@ class Porndig : MainAPI() {
         if(!posterUrl.isNullOrEmpty()){
             return posterUrl.replace("120x68","480x270")
                 .replace("320x180","480x270")
-                .replace("400x225","480x270").replace("https:","http:");
+                .replace("400x225","480x270")
+                .replace("/clips/","/")
+                .replace("https:","http:");
         }
         return posterUrl;
     }
@@ -163,7 +164,7 @@ class Porndig : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst(".video_item_title h2,.video_item_title > .video_item_section_txt")?.text() ?: return null
 
-        val href = fixUrl(this.selectFirst("a.video_item_thumbnail")!!.attr("href"))
+        val href = fixUrl(this.selectFirst("a.video_item_thumbnail, .video_item_thumbnail a.video_block_image")!!.attr("href"))
         val posterUrl = fixPosterUrl(fixUrlNull(this.select(".video_item_thumbnail img").attr("data-src")))
 
         var quality:SearchQuality? = null
